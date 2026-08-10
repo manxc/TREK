@@ -47,6 +47,7 @@ const planner: TranslationStrings = {
   'planner.route': 'Tuyến đường',
   'planner.optimize': 'Tối ưu hóa',
   'planner.openGoogleMaps': 'Mở trong Google Maps',
+  'planner.openBaiduMaps': 'Open in Baidu Maps',
   'planner.selectDayHint': 'Chọn một ngày từ danh sách bên trái để xem kế hoạch trong ngày',
   'planner.noPlacesForDay': 'Chưa có địa điểm nào cho ngày này',
   'planner.addPlacesLink': 'Thêm địa điểm →',

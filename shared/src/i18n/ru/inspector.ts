@@ -13,6 +13,7 @@ const inspector: TranslationStrings = {
   'inspector.confirmedRes': 'Подтверждённое бронирование',
   'inspector.pendingRes': 'Ожидающее бронирование',
   'inspector.google': 'Google Maps',
+  'inspector.baidu': 'Baidu Maps',
   'inspector.openStreetMap': 'OpenStreetMap',
   'inspector.website': 'Открыть сайт',
   'inspector.saveToCollection': 'Сохранить в коллекцию',

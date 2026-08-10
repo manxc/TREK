@@ -13,6 +13,7 @@ const inspector: TranslationStrings = {
   'inspector.confirmedRes': '確定済み予約',
   'inspector.pendingRes': '保留中の予約',
   'inspector.google': 'Google Maps',
+  'inspector.baidu': 'Baidu Maps',
   'inspector.openStreetMap': 'OpenStreetMap',
   'inspector.website': 'Webサイトを開く',
   'inspector.saveToCollection': 'コレクションに保存',

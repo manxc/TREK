@@ -4,7 +4,7 @@ declare global { interface Window { __dragData: DragDataPayload | null } }
 
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo } from 'react'
 import { avatarSrc } from '../../utils/avatarSrc'
-import { ChevronDown, ChevronRight, ChevronUp, Navigation, RotateCcw, ExternalLink, Clock, Pencil, GripVertical, Ticket, Plus, FileText, Trash2, Car, Lock, Hotel, Footprints, Route as RouteIcon, Bookmark, TramFront } from 'lucide-react'
+import { ChevronDown, ChevronRight, ChevronUp, Navigation, MapPin, RotateCcw, ExternalLink, Clock, Pencil, GripVertical, Ticket, Plus, FileText, Trash2, Car, Lock, Hotel, Footprints, Route as RouteIcon, Bookmark, TramFront } from 'lucide-react'
 import { assignmentsApi, reservationsApi } from '../../api/client'
 import { calculateRoute, calculateRouteWithLegs, optimizeRoute, generateGoogleMapsUrl } from '../Map/RouteCalculator'
 import PlaceAvatar from '../shared/PlaceAvatar'
@@ -41,6 +41,7 @@ import { DayPlanSidebarTransportDetailModal } from './DayPlanSidebarTransportDet
 import { TransitTitle, TransitLegChips, TransitItineraryInline } from './transitDisplay'
 import { DayPlanSidebarFooter } from './DayPlanSidebarFooter'
 import type { Trip, Day, Place, Category, Assignment, Accommodation, Reservation, AssignmentsMap, RouteResult, RouteSegment, DayNote } from '../../types'
+import { generateBaiduMapsDirectionUrl } from './placeBaiduMaps'
 import { getGoogleMapsUrlForPlace } from './placeGoogleMaps'
 
 interface DayPlanSidebarProps {
@@ -2426,6 +2427,33 @@ const DayPlanSidebar = React.memo(function DayPlanSidebar(props: DayPlanSidebarP
                             <path d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
                             <path d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
                           </svg>
+                        </button>
+                        <button
+                          onClick={() => {
+                            const dayStops = getDayAssignments(day.id).filter(a => a.place?.lat != null && a.place?.lng != null)
+                            const stops = dayStops.map(a => ({ name: a.place!.name, lat: a.place!.lat!, lng: a.place!.lng! }))
+                            const firstStop = dayStops[0] ? { isPlace: true, time: dayStops[0].place?.place_time ?? null } : undefined
+                            const lastAssignment = dayStops[dayStops.length - 1]
+                            const lastStop = lastAssignment ? { isPlace: true, time: lastAssignment.place?.place_time ?? null } : undefined
+                            const drawMorning = !!routeBookends && shouldDrawMorningLeg(routeBookends, day, firstStop)
+                            const drawEvening = !!routeBookends && shouldDrawEveningLeg(routeBookends, day, lastStop)
+                            const morning = drawMorning && routeBookends?.morning?.place_lat != null && routeBookends?.morning?.place_lng != null
+                              ? { name: routeBookends.morning.place_name || routeBookends.morning.reservation_title, lat: routeBookends.morning.place_lat, lng: routeBookends.morning.place_lng } : null
+                            const evening = drawEvening && routeBookends?.evening?.place_lat != null && routeBookends?.evening?.place_lng != null
+                              ? { name: routeBookends.evening.place_name || routeBookends.evening.reservation_title, lat: routeBookends.evening.place_lat, lng: routeBookends.evening.place_lng } : null
+                            const url = generateBaiduMapsDirectionUrl([...(morning ? [morning] : []), ...stops, ...(evening ? [evening] : [])])
+                            if (url) window.open(url, '_blank', 'noopener,noreferrer')
+                          }}
+                          aria-label={t('planner.openBaiduMaps')}
+                          title={t('planner.openBaiduMaps')}
+                          className="bg-transparent text-content-secondary"
+                          style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            padding: '6px 10px', borderRadius: 8, border: '1px solid var(--border-faint)',
+                            cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0,
+                          }}
+                        >
+                          <MapPin size={14} strokeWidth={2} />
                         </button>
                         <button onClick={() => handleOptimize(day.id)} className="bg-surface-hover text-content-secondary" style={{
                           flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,

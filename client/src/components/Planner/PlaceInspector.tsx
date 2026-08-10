@@ -23,6 +23,7 @@ import type { CollectionStatus } from '@trek/shared'
 import { splitReservationDateTime, formatTime, formatMoney } from '../../utils/formatters'
 import { useTripStore } from '../../store/tripStore'
 import { formatDistance, formatElevation } from '../../utils/units'
+import { getBaiduMapsUrlForPlace } from './placeBaiduMaps'
 import { getGoogleMapsUrlForPlace } from './placeGoogleMaps'
 import { getOpenStreetMapUrlForPlace } from './placeOpenStreetMap'
 
@@ -258,6 +259,7 @@ export default function PlaceInspector({
     place ? { ...place, google_ftid: place.google_ftid || googleDetails?.google_ftid || null } : null,
     googleDetails?.google_maps_url,
   )
+  const baiduMapsUrl = getBaiduMapsUrlForPlace(place)
   const openStreetMapUrl = getOpenStreetMapUrlForPlace(place)
   const selectedDay = days?.find(d => d.id === selectedDayId)
   const weekdayIndex = getWeekdayIndex(selectedDay?.date)
@@ -434,6 +436,10 @@ export default function PlaceInspector({
           {googleMapsUrl && (
             <ActionButton onClick={() => window.open(googleMapsUrl, '_blank')} variant="ghost" icon={<Navigation size={13} />}
               label={<span className="hidden sm:inline">{t('inspector.google')}</span>} />
+          )}
+          {baiduMapsUrl && (
+            <ActionButton onClick={() => window.open(baiduMapsUrl, '_blank', 'noopener,noreferrer')} variant="ghost" icon={<MapPin size={13} />}
+              label={<span className="hidden sm:inline">{t('inspector.baidu')}</span>} />
           )}
           {openStreetMapUrl && (
             <ActionButton onClick={() => window.open(openStreetMapUrl, '_blank')} variant="ghost" icon={<MapIcon size={13} />}

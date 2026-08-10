@@ -12,6 +12,7 @@ import {
   buildUser, buildTrip, buildDay, buildPlace, buildCategory, buildAssignment, buildDayNote, buildReservation,
 } from '../../../tests/helpers/factories'
 import DayPlanSidebar from './DayPlanSidebar'
+import { generateBaiduMapsDirectionUrl } from './placeBaiduMaps'
 
 // ── Hoisted mock state (accessible in vi.mock factories) ────────────────────
 const mockDayNotesState = vi.hoisted(() => ({
@@ -58,6 +59,10 @@ vi.mock('../Map/RouteCalculator', () => ({
       distanceText: '2 km', durationText: '10 min', drivingText: '10 min', walkingText: '25 min',
     })),
   })),
+}))
+
+vi.mock('./placeBaiduMaps', () => ({
+  generateBaiduMapsDirectionUrl: vi.fn().mockReturnValue('https://api.map.baidu.com/direction?...'),
 }))
 
 // PlaceAvatar needs IntersectionObserver
@@ -196,6 +201,30 @@ describe('DayPlanSidebar', () => {
     // With accommodation optimization on, one located place is routable (hotel → place → hotel),
     // so the route tools (here the Google Maps export button) must be visible.
     expect(screen.getByRole('button', { name: 'Open in Google Maps' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Navigate with Baidu Maps' })).toBeInTheDocument()
+  })
+
+  it('FE-PLANNER-DAYPLAN-005ba: Baidu route keeps the planned place and accommodation bookends', async () => {
+    const user = userEvent.setup()
+    const place = buildPlace({ name: 'Louvre', lat: 48.86, lng: 2.34 })
+    const day = buildDay({ id: 10, date: '2025-06-01', title: 'Day 1' })
+    const day2 = buildDay({ id: 11, date: '2025-06-02', title: 'Day 2' })
+    const assignment = buildAssignment({ id: 99, day_id: 10, order_index: 0, place })
+    const accommodations = [{ id: 1, start_day_id: 10, end_day_id: 11, place_name: 'Hotel', place_lat: 48.85, place_lng: 2.35 }]
+    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null)
+
+    render(<DayPlanSidebar {...makeDefaultProps({
+      days: [day, day2], places: [place], assignments: { '10': [assignment] },
+      accommodations: accommodations as any, selectedDayId: 10,
+    })} />)
+    await user.click(screen.getByRole('button', { name: 'Navigate with Baidu Maps' }))
+
+    expect(generateBaiduMapsDirectionUrl).toHaveBeenCalledWith(expect.arrayContaining([
+      expect.objectContaining({ name: 'Hotel', lat: 48.85, lng: 2.35 }),
+      expect.objectContaining({ name: 'Louvre', lat: 48.86, lng: 2.34 }),
+    ]))
+    expect(openSpy).toHaveBeenCalledWith('https://api.map.baidu.com/direction?...', '_blank', 'noopener,noreferrer')
+    openSpy.mockRestore()
   })
 
   it('FE-PLANNER-DAYPLAN-005c: route tools stay hidden for one place with no bookend hotel (#1330 guard)', () => {

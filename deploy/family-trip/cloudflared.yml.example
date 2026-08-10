@@ -3,6 +3,10 @@ credentials-file: /Users/manxc/.cloudflared/replace-with-tunnel-uuid.json
 protocol: http2
 
 ingress:
+  - hostname: trek.jiqiao.ai
+    service: http://127.0.0.1:3030
+    originRequest:
+      httpHostHeader: trek.jiqiao.ai
   - hostname: trek.xinyi.dev
     service: http://127.0.0.1:3030
     originRequest:

@@ -651,6 +651,21 @@ describe('PlaceInspector', () => {
     openSpy.mockRestore();
   });
 
+  it('FE-PLANNER-INSPECTOR-043c: Baidu Maps action opens an exact WGS84 marker', async () => {
+    const user = userEvent.setup();
+    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+    render(<PlaceInspector {...defaultProps} />);
+
+    await user.click(screen.getByRole('button', { name: 'Baidu Maps' }));
+
+    expect(openSpy).toHaveBeenCalledWith(
+      expect.stringContaining('https://api.map.baidu.com/marker?'),
+      '_blank',
+      'noopener,noreferrer'
+    );
+    openSpy.mockRestore();
+  });
+
   // ── No files section when no upload handler and no files ──────────────────
 
   it('FE-PLANNER-INSPECTOR-044: files section hidden when no files and no onFileUpload', () => {

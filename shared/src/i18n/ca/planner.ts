@@ -48,6 +48,7 @@ const planner: TranslationStrings = {
   'planner.route': 'Ruta',
   'planner.optimize': 'Optimitza',
   'planner.openGoogleMaps': 'Obre a Google Maps',
+  'planner.openBaiduMaps': 'Open in Baidu Maps',
   'planner.selectDayHint': "Selecciona un dia de la llista de l'esquerra per veure el seu pla",
   'planner.noPlacesForDay': 'Encara no hi ha llocs per a aquest dia',
   'planner.addPlacesLink': 'Afegeix llocs →',

@@ -47,6 +47,7 @@ const planner: TranslationStrings = {
   'planner.route': 'Rutt',
   'planner.optimize': 'Optimera',
   'planner.openGoogleMaps': 'Öppna i Google Maps',
+  'planner.openBaiduMaps': 'Open in Baidu Maps',
   'planner.selectDayHint': 'Välj en dag i listan till vänster för att se dagsplanen',
   'planner.noPlacesForDay': 'Det finns inga platser för denna dagen ännu',
   'planner.addPlacesLink': 'Lägg till platser →',

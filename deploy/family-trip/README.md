@@ -1,6 +1,6 @@
 # 两家 6 人、4 天 3 晚部署指南
 
-这个目录提供 Mac mini + Docker + Cloudflare Tunnel 的生产配置。应用只监听 `127.0.0.1:3030`，公网只能通过 HTTPS 隧道访问。
+这个目录提供 Mac mini + OrbStack Docker + Cloudflare Tunnel 的生产配置。应用只监听 `127.0.0.1:3030`，公网只能通过 HTTPS 隧道访问。主域名为 `trek.jiqiao.ai`，迁移期保留 `trek.xinyi.dev`。
 
 ## 1. 保存本机密钥
 
@@ -14,6 +14,8 @@
 ./manage.sh ps
 ```
 
+运行数据保存在 OrbStack 命名卷 `trek-family-data` 与 `trek-family-uploads`，不会写入源码目录。
+
 本机健康检查：
 
 ```bash
@@ -22,24 +24,25 @@ curl -fsS http://127.0.0.1:3030/api/health
 
 ## 3. 配置 HTTPS 隧道
 
-首次执行 `cloudflared tunnel login`，在浏览器中授权 `xinyi.dev`。然后创建命名隧道并绑定域名：
+首次执行 `cloudflared tunnel login`，在浏览器中授权域名。然后创建命名隧道并绑定两个域名：
 
 ```bash
 cloudflared tunnel create trek-family
 cloudflared tunnel route dns trek-family trek.xinyi.dev
+cloudflared tunnel route dns trek-family trek.jiqiao.ai
 ```
 
-以 `cloudflared.yml.example` 为模板创建 `~/.cloudflared/config.yml`，再运行：
+`manage.sh` 会从 `~/.cloudflared/config.yml` 读取隧道编号和凭据路径，随后由 Compose 中的 `cloudflared` 容器连接到 `app:3000`。凭据以只读 secret 挂载，不写入镜像或 Git。
 
 ```bash
-cloudflared tunnel run trek-family
+./manage.sh up -d
 ```
 
-本地网络若阻断 QUIC/UDP 7844，请像示例一样固定为 `protocol: http2`。确认访问正常后，再将 `cloudflared tunnel --config ~/.cloudflared/config.yml run trek-family` 注册为当前用户的登录自启动服务；不能直接使用不带 `tunnel run` 参数的默认 Homebrew 服务。
+容器固定使用 HTTP/2，避免本地网络阻断 QUIC/UDP 7844。不要再注册 macOS `cloudflared` 登录启动项，以免同一台机器重复运行两个副本。
 
 ## 4. 首次安全设置
 
-1. 登录 `https://trek.xinyi.dev` 并立即修改管理员密码。
+1. 登录 `https://trek.jiqiao.ai` 并立即修改管理员密码。
 2. 在管理员设置中关闭开放注册。
 3. 管理员开启 MFA；如所有成人都愿意，可再要求全员 MFA。
 4. 创建本次 4 天 3 晚行程。
@@ -58,4 +61,10 @@ cloudflared tunnel run trek-family
 
 ## 6. 更新与回滚
 
-更新前先在后台创建手动备份，并导出或另存钥匙串中的 `TREK Family Encryption Key`。镜像更新失败时，保留 `data/` 与 `uploads/`，切回上一个 Git 提交重新构建即可；不要把卷挂载到 `/app`。
+更新前先在后台创建手动备份，并导出或另存钥匙串中的 `TREK Family Encryption Key`。另做一份经过校验的外部备份：
+
+```bash
+./manage.sh external-backup
+```
+
+默认备份到 `/Users/manxc/Backups/TREK/<UTC 时间>/`，其中包含压缩包和 SHA-256 校验文件。镜像更新失败时，切回上一个 Git 提交重新构建，再把备份恢复到两个命名卷；不要把卷挂载到 `/app` 根目录。

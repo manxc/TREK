@@ -47,6 +47,7 @@ const planner: TranslationStrings = {
   'planner.route': 'Rota',
   'planner.optimize': 'Optimize et',
   'planner.openGoogleMaps': "Google Haritalar'da aç",
+  'planner.openBaiduMaps': 'Open in Baidu Maps',
   'planner.selectDayHint': 'Gün planını görmek için soldaki listeden bir gün seçin',
   'planner.noPlacesForDay': 'Bu gün için henüz yer yok',
   'planner.addPlacesLink': 'Yer ekle →',
