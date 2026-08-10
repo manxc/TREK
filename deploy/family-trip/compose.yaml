@@ -1,0 +1,50 @@
+services:
+  app:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        APP_VERSION: ${TREK_IMAGE_TAG:-3.4.1-family-zh-en}
+    image: trek-family:${TREK_IMAGE_TAG:-3.4.1-family-zh-en}
+    container_name: trek-family
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+    tmpfs:
+      - /tmp:noexec,nosuid,size=128m
+    ports:
+      - "127.0.0.1:${TREK_LOCAL_PORT:-3030}:3000"
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?Set ENCRYPTION_KEY in .env}
+      TZ: Asia/Shanghai
+      LOG_LEVEL: info
+      DEFAULT_LANGUAGE: zh
+      APP_URL: ${APP_URL:-https://trek.xinyi.dev}
+      ALLOWED_ORIGINS: ${APP_URL:-https://trek.xinyi.dev}
+      FORCE_HTTPS: "true"
+      TRUST_PROXY: "1"
+      HSTS_INCLUDE_SUBDOMAINS: "false"
+      ALLOW_INTERNAL_NETWORK: "false"
+      SESSION_DURATION: 24h
+      SESSION_DURATION_REMEMBER: 30d
+      TREK_PLUGINS_ENABLED: "false"
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?Set ADMIN_EMAIL in .env}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in .env}
+    volumes:
+      - ./data:/app/data
+      - ./uploads:/app/uploads
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
